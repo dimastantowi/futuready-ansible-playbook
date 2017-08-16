@@ -1,0 +1,52 @@
+---
+
+- hosts: docker-host
+  tasks:
+  
+  - name: Install epel release
+    yum: 
+       name: epel-release
+       state: latest
+
+  - name: Docker repo
+    get_url: 
+         url: https://download.docker.com/linux/centos/docker-ce.repo 
+         dest: /etc/yum.repos.d/docker-ce.repo
+         mode: 0700
+         force_basic_auth: yes
+
+  - name: Update repository
+    yum: name=* 
+         state=latest
+
+  - name: Install development tools
+    yum:
+      name: "@Development tools"
+      state: present
+
+  - name: Remove docker old version
+    yum:
+      name: "{{ item }}"
+      state: absent 
+    with_items:
+       - docker
+       - docker-common 
+       - container-selinux
+       - docker-selinux
+       - docker-engine 
+       - docker-engine-selinux
+
+  - name: Install docker
+    yum:
+      name: docker-ce-17.06.0.ce-1.el7.centos 
+      state: present
+
+  - service:
+      name: docker
+      state: restarted
+
+  - name: Install docker-compose
+    get_url:
+         url: https://github.com/docker/compose/releases/download/1.15.0/docker-compose-Linux-x86_64
+         dest: /usr/local/bin/docker-compose
+         mode: 0755
