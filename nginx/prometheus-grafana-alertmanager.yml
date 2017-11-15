@@ -1,0 +1,35 @@
+---
+
+- hosts: docker-host
+  tasks:
+  
+  - name: Pull images nginx 
+    command: docker pull nginx:alpine
+
+  - name: Extract pga_docker_compose
+    unarchive:
+         src: https://github.com/dimastantowi/futuready-docker-compose/archive/Nginx-v1.0.0.tar.gz
+         dest: /tmp/
+         remote_src: True
+         exclude:
+             - README.md
+             - LICENSE
+
+  - name: Move directory nginx
+    command: mv /tmp/futuready-docker-compose-Nginx-v1.0.0/nginx /docker/
+
+  - name: Delete Temp
+    shell: rm -rf /tmp/futuready-docker-compose-Nginx-*
+ 
+  - name: Set permission nginx 
+    file:
+       path: /docker/nginx
+       mode: 0755
+       state: directory
+       recurse: yes
+
+  - name: Run container 
+    command: docker-compose up -d
+    args:
+      chdir: /docker/nginx
+
